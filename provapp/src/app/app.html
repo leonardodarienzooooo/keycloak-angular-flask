@@ -1,0 +1,17 @@
+<nav>
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+  &nbsp;
+  <ng-container *ngIf="auth.isLoggedIn()">
+    <a routerLink="/profile" routerLinkActive="active">Profile</a>
+    &nbsp;
+    <span>{{ auth.getUsername() }}</span>
+    &nbsp;
+    <button (click)="auth.logout()">Logout</button>
+  </ng-container>
+  
+  <button *ngIf="!auth.isLoggedIn()" (click)="auth.login()">Login</button>
+</nav>
+
+<main>
+  <router-outlet />
+</main>
