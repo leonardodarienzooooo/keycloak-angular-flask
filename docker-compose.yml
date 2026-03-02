@@ -9,7 +9,12 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_HOSTNAME_STRICT: "false"
       KC_PROXY_HEADERS: "xforwarded"
+      # Aggiungiamo questa riga per dire a Keycloak di usare un file per i dati
+      KC_DB: dev-file 
     ports:
       - "8080:8080"
+    volumes:
+      # Questa riga salva i dati di Keycloak in una cartella locale del tuo Codespace
+      - ./keycloak_data:/opt/keycloak/data
     command:
       - start-dev
