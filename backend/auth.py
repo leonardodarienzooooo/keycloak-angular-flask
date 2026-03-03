@@ -48,6 +48,25 @@ def require_auth(f):
             g.user = payload
         except Exception as e:
             return jsonify({"error": f"Token non valido: {str(e)}"}), 401
+
+def get_roles(payload: dict) -> list:
+    # Cerca i ruoli nel JWT all'interno del campo standard di Keycloak "realm_access"
+    return payload.get("realm_access", {}).get("roles", [])
+
+# Decoratore che useremo nell'app.py per proteggere le rotte in base al ruolo
+def require_role(role: str):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            # g.user esiste già perché @require_auth deve essere eseguito prima
+            if role not in get_roles(g.user):
+                # Se il ruolo non c'è, restituiamo 403 Forbidden (Permesso negato)
+                return jsonify({"error": "Permesso negato: non hai il ruolo richiesto"}), 403
+            
+            # Se il ruolo c'è, esegue la funzione normalmente
+            return f(*args, **kwargs)
+        return wrapper
+    return decorator
             
         return f(*args, **kwargs)
     return decorated

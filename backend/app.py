@@ -1,49 +1,51 @@
 from flask import Flask, request, jsonify, g
 from flask_cors import CORS
-from auth import require_auth
+from auth import require_auth, require_role # Importiamo il nuovo decoratore
 
 app = Flask(__name__)
-# Sostituisci la vecchia riga CORS(app) con questa:
+# CORS più permissivo per gestire i vari metodi
 CORS(app, resources={r"/*": {"origins": "*"}}, methods=["GET", "POST", "DELETE", "OPTIONS"])
 
-# Database temporaneo in memoria
-shopping_lists = {}
+# Lista condivisa tra tutti gli utenti
+# Ora ogni elemento è un oggetto: {"id": 1, "nome": "Pane"}
+shopping_list: list = []
+counter: int = 1
 
 @app.route("/items", methods=["GET"])
 @require_auth
 def get_items():
-    username = g.user.get("preferred_username")
-    items = shopping_lists.get(username, [])
-    return jsonify({"items": items, "user": username})
+    # Tutti gli utenti autenticati (sia user che user_plus) possono vedere la lista
+    return jsonify({"items": shopping_list})
 
 @app.route("/items", methods=["POST"])
 @require_auth
+@require_role("user_plus")  # SOLO chi ha user_plus può aggiungere
 def add_item():
-    username = g.user.get("preferred_username")
+    global counter
     data = request.get_json()
-    item = data.get("item", "").strip()
+    item_name = data.get("item", "").strip()
     
-    if not item:
+    if not item_name:
         return jsonify({"error": "Item non può essere vuoto"}), 400
-        
-    if username not in shopping_lists:
-        shopping_lists[username] = []
-        
-    shopping_lists[username].append(item)
-    return jsonify({"message": "Aggiunto", "items": shopping_lists[username]}), 201
 
-@app.route("/items/<int:index>", methods=["DELETE"])
+    nuovo = {"id": counter, "nome": item_name}
+    shopping_list.append(nuovo)
+    counter += 1
+
+    return jsonify({"message": "Aggiunto", "items": shopping_list}), 201
+
+@app.route("/items/<int:item_id>", methods=["DELETE"])
 @require_auth
-def delete_item(index):
-    username = g.user.get("preferred_username")
+@require_role("user_plus")  # SOLO chi ha user_plus può eliminare
+def delete_item(item_id):
+    global shopping_list
+    # Cerchiamo l'elemento per ID e lo rimuoviamo
+    original_len = len(shopping_list)
+    shopping_list = [item for item in shopping_list if item["id"] != item_id]
     
-    if username in shopping_lists:
-        # Controlliamo se l'indice esiste nella lista
-        if 0 <= index < len(shopping_lists[username]):
-            # Rimuoviamo l'elemento all'indice indicato
-            shopping_lists[username].pop(index)
-            return jsonify({"message": "Eliminato", "items": shopping_lists[username]}), 200
-            
+    if len(shopping_list) < original_len:
+        return '', 204 # Successo senza contenuto
+
     return jsonify({"error": "Elemento non trovato"}), 404
 
 if __name__ == "__main__":
