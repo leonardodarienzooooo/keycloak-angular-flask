@@ -1,20 +1,29 @@
-<nav>
+<nav style="padding: 15px; background-color: #f8f9fa; border-bottom: 1px solid #dee2e6;">
   <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Home</a>
   &nbsp;
-  <!-- Questo blocco appare solo se sei loggato -->
-  <ng-container *ngIf="auth.isLoggedIn()">
+
+  @if (auth.isLoggedIn()) {
     <a routerLink="/profile" routerLinkActive="active">Profile</a>
     &nbsp;
-    <a routerLink="/spesa" routerLinkActive="active">Lista spesa</a> <!-- AGGIUNGI QUESTA RIGA -->
+    <a routerLink="/spesa" routerLinkActive="active">Lista spesa</a>
     &nbsp;
-    <span>{{ auth.getUsername() }}</span>
+
+    <!-- Link visibile solo ai user_plus -->
+    @if (auth.hasRole('user_plus')) {
+      <a routerLink="/plus" routerLinkActive="active" style="color: gold; font-weight: bold; background: #333; padding: 2px 5px; border-radius: 3px;">
+        Area Plus 🌟
+      </a>
+      &nbsp;
+    }
+
+    <span>| Loggato come: <strong>{{ auth.getUsername() }}</strong></span>
     &nbsp;
     <button (click)="auth.logout()">Logout</button>
-  </ng-container>
-  
-  <button *ngIf="!auth.isLoggedIn()" (click)="auth.login()">Login</button>
+  } @else {
+    <button (click)="auth.login()">Login</button>
+  }
 </nav>
 
-<main>
+<main style="padding: 20px;">
   <router-outlet />
 </main>

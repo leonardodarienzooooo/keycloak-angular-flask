@@ -1,10 +1,9 @@
 export const environment = {
   production: false,
   keycloak: {
-    // IMPORTANTE: Metti l'URL della tua porta 8080 SENZA lo slash finale /
-    url: 'https://musical-space-rotary-phone-r7w4v9656pvcp4qp-8080.app.github.dev/', 
+    url: 'https://musical-space-rotary-phone-r7w4v9656pvcp4qp-8080.app.github.dev', 
     realm: 'prova',
-    clientId: 'provapp',
+    clientId: 'provapp', // <--- DEVE ESSERE IDENTICO A QUELLO SU KEYCLOAK
     redirectUri: window.location.origin,
   }
 };

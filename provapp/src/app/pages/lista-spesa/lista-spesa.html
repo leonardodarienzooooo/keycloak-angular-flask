@@ -1,46 +1,42 @@
-<h1>Lista della spesa</h1>
+<div style="padding: 20px;">
+  <h2>Lista della Spesa</h2>
 
-<!-- Form per aggiungere nuovi elementi -->
-<form (ngSubmit)="addItem()" style="margin-bottom: 20px;">
-  <input 
-    [(ngModel)]="newItem" 
-    name="item" 
-    placeholder="Es. Latte, Pane..." 
-    required 
-    style="padding: 5px; width: 200px;"
-  />
-  <button type="submit" style="margin-left: 10px; padding: 5px 15px;">
-    Aggiungi
-  </button>
-</form>
+  <!-- Mostra il form di aggiunta SOLO se l'utente ha il ruolo user_plus -->
+  @if (authService.hasRole('user_plus')) {
+    <div style="margin-bottom: 20px; border: 1px dashed #ccc; padding: 10px;">
+      <p><small>Modalità Editore Attiva</small></p>
+      <input 
+        [(ngModel)]="newItem" 
+        placeholder="Nuovo elemento..." 
+        style="padding: 5px;"
+      />
+      <button (click)="addItem()" style="margin-left: 10px;">Aggiungi</button>
+    </div>
+  } @else {
+    <p style="color: orange;"><small>Modalità Sola Lettura: non puoi aggiungere o eliminare.</small></p>
+  }
 
-<!-- Messaggio di errore (appare solo se error() ha un valore) -->
-<p *ngIf="error()" style="color: red; font-weight: bold;">
-  {{ error() }}
-</p>
+  <p *ngIf="error()" style="color: red;">{{ error() }}</p>
 
-<!-- Lista degli elementi -->
-<div *ngIf="items().length > 0; else empty">
-  <ul style="list-style: none; padding: 0;">
-    <!-- Usiamo 'let i = index' per passare la posizione corretta al backend -->
-    <li *ngFor="let item of items(); let i = index" style="margin-bottom: 10px; padding: 10px; border-bottom: 1px solid #eee;">
-      <span style="display: inline-block; min-width: 150px;">
-        {{ item }}
-      </span>
-      
-      <button 
-        (click)="deleteItem(i)" 
-        style="background-color: #ff4444; color: white; border: none; padding: 5px 10px; cursor: pointer; border-radius: 4px;"
-      >
-        Elimina
-      </button>
-    </li>
+  <ul>
+    @for (item of items(); track item.id) {
+      <li style="margin-bottom: 8px;">
+        <strong>{{ item.nome }}</strong>
+        
+        <!-- Mostra il tasto elimina SOLO se l'utente ha il ruolo user_plus -->
+        @if (authService.hasRole('user_plus')) {
+          <button 
+            (click)="deleteItem(item.id)" 
+            style="margin-left: 20px; color: red; cursor: pointer;"
+          >
+            elimina
+          </button>
+        }
+      </li>
+    }
   </ul>
-</div>
 
-<!-- Template mostrato quando la lista è vuota -->
-<ng-template #empty>
-  <p style="color: #666; font-style: italic;">
-    Nessun elemento nella lista.
-  </p>
-</ng-template>
+  @if (items().length === 0) {
+    <p>Nessun elemento in lista.</p>
+  }
+</div>

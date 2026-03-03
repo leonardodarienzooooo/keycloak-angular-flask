@@ -3,13 +3,20 @@ import { inject, Injectable } from '@angular/core';
 import Keycloak from 'keycloak-js';
 import { Observable } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+// Definiamo l'interfaccia per chiarezza
+export interface ElementoSpesa {
+  id: number;
+  nome: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class SpesaService {
   private http = inject(HttpClient);
   private keycloak = inject(Keycloak);
 
-  // IMPORTANTE: Metti l'URL della tua porta 5000 di Codespaces SENZA / finale
-  private baseUrl = 'https://musical-space-rotary-phone-r7w4v9656pvcp4qp-5000.app.github.dev'; 
+  private baseUrl = 'https://musical-space-rotary-phone-r7w4v9656pvcp4qp-5000.app.github.dev/';
 
   private getHeaders(): HttpHeaders {
     return new HttpHeaders({
@@ -17,25 +24,15 @@ export class SpesaService {
     });
   }
 
-  getItems(): Observable<{ items: string[]; user: string }> {
-    return this.http.get<{ items: string[]; user: string }>(
-      `${this.baseUrl}/items`,
-      { headers: this.getHeaders() }
-    );
+  getItems(): Observable<{ items: ElementoSpesa[] }> {
+    return this.http.get<{ items: ElementoSpesa[] }>(`${this.baseUrl}/items`, { headers: this.getHeaders() });
   }
 
-  addItem(item: string): Observable<{ items: string[] }> {
-    return this.http.post<{ items: string[] }>(
-      `${this.baseUrl}/items`,
-      { item },
-      { headers: this.getHeaders() }
-    );
+  addItem(item: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/items`, { item }, { headers: this.getHeaders() });
   }
-  // Aggiungi questo metodo sotto quello di addItem
-deleteItem(index: number): Observable<any> {
-  return this.http.delete(
-    `${this.baseUrl}/items/${index}`, 
-    { headers: this.getHeaders() }
-  );
-}
+
+  deleteItem(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/items/${id}`, { headers: this.getHeaders() });
+  }
 }
